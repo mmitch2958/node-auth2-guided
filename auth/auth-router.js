@@ -1,7 +1,7 @@
 const bcryptjs = require("bcryptjs");
 
 const router = require("express").Router();
-
+const jwt = require("jsonwebtoken")
 const Users = require("../users/users-model.js");
 const { isValid } = require("../users/users-service.js");
 
@@ -39,6 +39,7 @@ router.post("/login", (req, res) => {
       .then(([user]) => {
         // compare the password the hash stored in the database
         if (user && bcryptjs.compareSync(password, user.password)) {
+          const token = getJwt(user);
           res.status(200).json({ message: "Welcome to our API" });
         } else {
           res.status(401).json({ message: "Invalid credentials" });
@@ -53,5 +54,17 @@ router.post("/login", (req, res) => {
     });
   }
 });
+function getJwt(user) {
+  
+  const payload = {
+    username: user.username,
+    role: user.role,
+  };
+  
+  const jwtSecret = 'is it secret? is it safe?';
 
+  const jwtOption = { expiresIn: "8h", };
+
+  return jwt.sign(payload, jwtSecret, jwtOption);
+}
 module.exports = router;
